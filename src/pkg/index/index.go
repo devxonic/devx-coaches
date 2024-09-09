@@ -14,6 +14,7 @@ type Repo interface {
 	AddClass(ctx context.Context, class api.Class) (api.Class, error)
 	AddSubject(ctx context.Context, subject api.Subject) (api.Subject, error)
 	GetSubjects(ctx context.Context) ([]api.Subject, error)
+	GetBatches(ctx context.Context) ([]api.Batch, error)
 	// GetPeriods(ctx context.Context) (api.Period, error)
 	AddPeriods(ctx context.Context, period api.Period) (api.Period, error)
 	AddYear(ctx context.Context, year api.Year) (api.Year, error)
@@ -28,6 +29,7 @@ type Service interface {
 	AddClass(ctx context.Context, class api.Class) (api.Class, error)
 	AddSubject(ctx context.Context, subject api.Subject) (api.Subject, error)
 	GetSubjects(ctx context.Context) ([]api.Subject, error)
+	GetBatches(ctx context.Context) ([]api.Batch, error)
 	// GetPeriods(ctx context.Context) (api.Period, error)
 	AddPeriods(ctx context.Context, period api.Period) (api.Period, error)
 	AddYear(ctx context.Context, year api.Year) (api.Year, error)
@@ -74,6 +76,10 @@ func (r *repoService) GetStudents(ctx context.Context) ([]api.Student, error) {
 
 func (r *repoService) GetClass(ctx context.Context) ([]api.Class, error) {
 	return r.repo.GetClass(ctx)
+}
+
+func (r *repoService) GetBatches(ctx context.Context) ([]api.Batch, error) {
+	return r.repo.GetBatches(ctx)
 }
 
 func (r *repoService) GetSubjects(ctx context.Context) ([]api.Subject, error) {

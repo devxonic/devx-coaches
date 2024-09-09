@@ -259,3 +259,18 @@ func (db *Db) GetSubjects(ctx context.Context) ([]api.Subject, error) {
 	}
 	return products, nil
 }
+
+func (db *Db) GetBatches(ctx context.Context) ([]api.Batch, error) {
+	q := ` SELECT id, description, status FROM batches`
+	rows, err := db.conn.Query(ctx, q)
+	if err != nil {
+		return nil, fmt.Errorf("unable to query users: %w", err)
+	}
+	defer rows.Close()
+	// var data []api.Student
+	products, err := pgx.CollectRows(rows, pgx.RowToStructByName[api.Batch])
+	if err != nil {
+		return nil, fmt.Errorf("unable to collect rows: %w", err)
+	}
+	return products, nil
+}

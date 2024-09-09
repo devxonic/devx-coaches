@@ -31,6 +31,7 @@ func NewHandler(s index.Service, ro chi.Router) {
 		r.Get("/getStudents", h.GetStudents)
 		r.Get("/getClass", h.GetClass)
 		r.Get("/getSubjects", h.GetSubjects)
+		r.Get("/getBatches", h.GetBatches)
 	})
 }
 
@@ -139,6 +140,22 @@ func (h *handler) GetSubjects(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	results, err := h.indexService.GetSubjects(r.Context())
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+	}
+	json.NewEncoder(w).Encode(results)
+}
+
+func (h *handler) GetBatches(w http.ResponseWriter, r *http.Request) {
+	var s api.Batch
+	err := json.NewDecoder(r.Body).Decode(&s)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+		return
+	}
+	results, err := h.indexService.GetBatches(r.Context())
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
