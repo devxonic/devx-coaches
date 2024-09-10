@@ -32,8 +32,8 @@ type Student struct {
 type Class struct {
 	Id          string `json:"id"`
 	Description string `json:"description"`
-	Code        string `json:"code"`
-	Status      int    `json:"status"`
+	// Code        string `json:"code"`
+	Status int `json:"status"`
 }
 
 type Subject struct {

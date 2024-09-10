@@ -23,9 +23,25 @@ func New(db *pgxpool.Pool) index.Repo {
 func (db *Db) AddStudent(ctx context.Context, student api.Student) (api.Student, error) {
 	query := `SELECT COUNT(*) FROM students`
 	var count int
+
 	rows, err := db.conn.Query(ctx, query)
-	rows.Scan(&count)
-	log.Println(count)
+	if err != nil {
+		return api.Student{}, fmt.Errorf("unable to execute query: %w", err)
+	}
+	defer rows.Close()
+
+	if rows.Next() {
+		err := rows.Scan(&count)
+		if err != nil {
+			return api.Student{}, fmt.Errorf("unable to scan row: %w", err)
+		}
+	} else {
+		return api.Student{}, fmt.Errorf("no rows returned")
+	}
+
+	if err := rows.Err(); err != nil {
+		return api.Student{}, fmt.Errorf("error iterating over rows: %w", err)
+	}
 	nextId := count + 1
 	formattedID := fmt.Sprintf("%04d", nextId)
 	q := `INSERT INTO students(id, name, gender, s_of, email, class_id, batch_id, subject_id, fees_amount, phone, caddress, adm_fee, nic_no, status)
@@ -58,18 +74,27 @@ func (db *Db) AddStudent(ctx context.Context, student api.Student) (api.Student,
 func (db *Db) AddClass(ctx context.Context, class api.Class) (api.Class, error) {
 	query := `SELECT COUNT(*) FROM class`
 	var count int
+
 	rows, err := db.conn.Query(ctx, query)
-	rows.Scan(&count)
 	if err != nil {
-		return api.Class{}, fmt.Errorf("unable to query users: %w", err)
+		return api.Class{}, fmt.Errorf("unable to execute query: %w", err)
 	}
-	// pgx.CollectOneRow(rows, pgx.RowToStructByName(count))
 	defer rows.Close()
-	// rows, err := db.conn.Query(ctx, "SELECT COUNT(*) FROM class").
-	// 	Scan(&count)
-	if err != nil {
-		log.Fatal(err)
+
+	if rows.Next() {
+		err := rows.Scan(&count)
+		if err != nil {
+			return api.Class{}, fmt.Errorf("unable to scan row: %w", err)
+		}
+	} else {
+		return api.Class{}, fmt.Errorf("no rows returned")
 	}
+
+	if err := rows.Err(); err != nil {
+		return api.Class{}, fmt.Errorf("error iterating over rows: %w", err)
+	}
+
+	log.Println("Count:", count) // rows, err := db.conn.Query(ctx, "SELECT COUNT(*) FROM class").
 	nextId := count + 1
 	formattedID := fmt.Sprintf("%04d", nextId)
 	q := `INSERT INTO class(id, description, status)
@@ -90,18 +115,28 @@ func (db *Db) AddClass(ctx context.Context, class api.Class) (api.Class, error) 
 func (db *Db) AddSubject(ctx context.Context, subject api.Subject) (api.Subject, error) {
 	query := `SELECT COUNT(*) FROM subject`
 	var count int
+
 	rows, err := db.conn.Query(ctx, query)
-	rows.Scan(&count)
 	if err != nil {
-		return api.Subject{}, fmt.Errorf("unable to query users: %w", err)
+		return api.Subject{}, fmt.Errorf("unable to execute query: %w", err)
 	}
-	// pgx.CollectOneRow(rows, pgx.RowToStructByName(count))
 	defer rows.Close()
-	// rows, err := db.conn.Query(ctx, "SELECT COUNT(*) FROM class").
-	// 	Scan(&count)
-	if err != nil {
-		log.Fatal(err)
+
+	if rows.Next() {
+		err := rows.Scan(&count)
+		if err != nil {
+			return api.Subject{}, fmt.Errorf("unable to scan row: %w", err)
+		}
+	} else {
+		return api.Subject{}, fmt.Errorf("no rows returned")
 	}
+
+	if err := rows.Err(); err != nil {
+		return api.Subject{}, fmt.Errorf("error iterating over rows: %w", err)
+	}
+
+	log.Println("Count:", count) // rows, err := db.conn.Query(ctx, "SELECT COUNT(*) FROM class").
+	// 	Scan(&count)
 	nextId := count + 1
 	formattedID := fmt.Sprintf("%04d", nextId)
 	q := `INSERT INTO subject(id, description, status)
@@ -122,18 +157,27 @@ func (db *Db) AddSubject(ctx context.Context, subject api.Subject) (api.Subject,
 func (db *Db) AddBatch(ctx context.Context, Batch api.Batch) (api.Batch, error) {
 	query := `SELECT COUNT(*) FROM batches`
 	var count int
+
 	rows, err := db.conn.Query(ctx, query)
-	rows.Scan(&count)
 	if err != nil {
-		return api.Batch{}, fmt.Errorf("unable to query users: %w", err)
+		return api.Batch{}, fmt.Errorf("unable to execute query: %w", err)
 	}
-	// pgx.CollectOneRow(rows, pgx.RowToStructByName(count))
 	defer rows.Close()
-	// rows, err := db.conn.Query(ctx, "SELECT COUNT(*) FROM class").
-	// 	Scan(&count)
-	if err != nil {
-		log.Fatal(err)
+
+	if rows.Next() {
+		err := rows.Scan(&count)
+		if err != nil {
+			return api.Batch{}, fmt.Errorf("unable to scan row: %w", err)
+		}
+	} else {
+		return api.Batch{}, fmt.Errorf("no rows returned")
 	}
+
+	if err := rows.Err(); err != nil {
+		return api.Batch{}, fmt.Errorf("error iterating over rows: %w", err)
+	}
+
+	log.Println("Count:", count) // rows, err := db.conn.Query(ctx, "SELECT COUNT(*) FROM class").
 	nextId := count + 1
 	formattedID := fmt.Sprintf("%04d", nextId)
 	q := `INSERT INTO batches(id, description, status)
