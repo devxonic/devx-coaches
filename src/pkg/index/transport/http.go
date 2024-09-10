@@ -104,13 +104,6 @@ func (h *handler) AddBatch(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) GetStudents(w http.ResponseWriter, r *http.Request) {
-	var s api.Student
-	err := json.NewDecoder(r.Body).Decode(&s)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
-		return
-	}
 	results, err := h.indexService.GetStudents(r.Context())
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -121,13 +114,6 @@ func (h *handler) GetStudents(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) GetClass(w http.ResponseWriter, r *http.Request) {
-	var s api.Student
-	err := json.NewDecoder(r.Body).Decode(&s)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
-		return
-	}
 	results, err := h.indexService.GetClass(r.Context())
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -138,13 +124,6 @@ func (h *handler) GetClass(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) GetSubjects(w http.ResponseWriter, r *http.Request) {
-	var s api.Student
-	err := json.NewDecoder(r.Body).Decode(&s)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
-		return
-	}
 	results, err := h.indexService.GetSubjects(r.Context())
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -155,13 +134,6 @@ func (h *handler) GetSubjects(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) GetBatches(w http.ResponseWriter, r *http.Request) {
-	var s api.Batch
-	err := json.NewDecoder(r.Body).Decode(&s)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
-		return
-	}
 	results, err := h.indexService.GetBatches(r.Context())
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
