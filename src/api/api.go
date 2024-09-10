@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/cors"
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/jackc/pgx/v5/stdlib"
 
@@ -33,8 +34,14 @@ func Start(cfg *ApiConfig) {
 	// 	log.Fatalf("cannot ping the databse %s", err)
 	// }
 	log.Println("success fully connected to database")
+	corsOptions := cors.Options{
+		AllowedOrigins:   []string{"*"}, // Replace "*" with specific origins in production
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Content-Type", "Authorization"},
+		AllowCredentials: true,
+	}
 	r := chi.NewRouter()
-
+	r.Use(cors.Handler(corsOptions))
 	// transport.Activate(r, db)
 	transport.Activate(r, db)
 	err = http.ListenAndServe(":5100", r)
