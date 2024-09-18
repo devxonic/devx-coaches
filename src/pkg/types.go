@@ -50,6 +50,8 @@ type Period struct {
 	PeriodDescription string `json:"periodDescription"`
 	PeriodDate        string `json:"periodDate"`
 	Status            int    `json:"status"`
+	Isactive          int    `json:"isactive"`
+	Isdeleted         int    `json:"isdeleted"`
 }
 
 type Teachers struct {
@@ -68,11 +70,22 @@ type Year struct {
 type YearMonth struct {
 	Id          string `json:"id"`
 	Description string `json:"description"`
-	Status      int    `json:"status"`
+	YearId      string
+	Status      int `json:"status"`
 }
 
 type Batch struct {
 	Id          string `json:"id"`
 	Description string `json:"description"`
 	Status      int    `json:"status"`
+}
+
+type YearMonthJoin struct {
+	Id                   string `json:"id"`
+	Description          string `json:"description"`
+	Status               string `json:"status"`
+	Yearmonthstatus      string `json:"yearmonthstatus"`
+	Yearmonthid          string `json:"yearmonthid"`
+	Yearmonthdescription string `json:"yearmonthdescription"`
+	Months               string `json:"months"`
 }

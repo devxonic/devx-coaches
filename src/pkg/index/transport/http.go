@@ -2,6 +2,7 @@ package transport
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -32,6 +33,11 @@ func NewHandler(s index.Service, ro chi.Router) {
 		r.Get("/getClass", h.GetClass)
 		r.Get("/getSubjects", h.GetSubjects)
 		r.Get("/getBatches", h.GetBatches)
+		r.Post("/addYear", h.AddYear)
+		r.Post("/addPeriod", h.AddPeriods)
+		// r.Get("/getPeriods", h.GetPeriods)
+		r.Get("/getYearWithMonths", h.GetYearWithMonths)
+		// r.Get("/getYears", h.GetYear)
 	})
 }
 
@@ -64,8 +70,48 @@ func (h *handler) AddClass(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+		return
 	}
 	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(results)
+}
+
+func (h *handler) AddYear(w http.ResponseWriter, r *http.Request) {
+	var s api.Year
+	err := json.NewDecoder(r.Body).Decode(&s)
+	w.Header().Set("Content-Type", "application/json")
+	if err != nil {
+		fmt.Print("error in body decoding")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+		return
+	}
+	results, err := h.indexService.AddYear(r.Context(), s)
+	if err != nil {
+		fmt.Print("error in add year")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+		return
+	}
+	json.NewEncoder(w).Encode(results)
+}
+
+func (h *handler) AddPeriods(w http.ResponseWriter, r *http.Request) {
+	var s api.Period
+	err := json.NewDecoder(r.Body).Decode(&s)
+	w.Header().Set("Content-Type", "application/json")
+	if err != nil {
+		fmt.Print("error in body decoding")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+	}
+	fmt.Print("hit here")
+	results, err := h.indexService.AddPeriods(r.Context(), s)
+	if err != nil {
+		fmt.Print("error in add year")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+	}
 	json.NewEncoder(w).Encode(results)
 }
 
@@ -135,6 +181,16 @@ func (h *handler) GetSubjects(w http.ResponseWriter, r *http.Request) {
 
 func (h *handler) GetBatches(w http.ResponseWriter, r *http.Request) {
 	results, err := h.indexService.GetBatches(r.Context())
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(results)
+}
+
+func (h *handler) GetYearWithMonths(w http.ResponseWriter, r *http.Request) {
+	results, err := h.indexService.GetYearWithMonths(r.Context())
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})

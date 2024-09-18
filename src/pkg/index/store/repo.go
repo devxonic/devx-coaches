@@ -199,62 +199,130 @@ func (db *Db) AddYear(ctx context.Context, Year api.Year) (api.Year, error) {
 	query := `SELECT COUNT(*) FROM Year`
 	var count int
 	rows, err := db.conn.Query(ctx, query)
-	rows.Scan(&count)
 	if err != nil {
-		return api.Year{}, fmt.Errorf("unable to query users: %w", err)
+		return api.Year{}, fmt.Errorf("unable to execute query: %w", err)
 	}
-	// pgx.CollectOneRow(rows, pgx.RowToStructByName(count))
 	defer rows.Close()
-	// rows, err := db.conn.Query(ctx, "SELECT COUNT(*) FROM class").
-	// 	Scan(&count)
-	if err != nil {
-		log.Fatal(err)
+
+	if rows.Next() {
+		err := rows.Scan(&count)
+		if err != nil {
+			return api.Year{}, fmt.Errorf("unable to scan row: %w", err)
+		}
+	} else {
+		return api.Year{}, fmt.Errorf("no rows returned")
 	}
+
+	if err := rows.Err(); err != nil {
+		return api.Year{}, fmt.Errorf("error iterating over rows: %w", err)
+	}
+
 	nextId := count + 1
 	formattedID := fmt.Sprintf("%04d", nextId)
-	q := `INSERT INTO Year(id, description, status)
-    VALUES($1, $2, $3)`
+	q := `INSERT INTO Year(id, description, status, remarks)
+    VALUES($1, $2, $3, $4)`
 	_, err = db.conn.Exec(
 		ctx,
 		q,
 		formattedID,
 		Year.Description,
 		Year.Status,
+		Year.Remarks,
 	)
 	if err != nil {
+		fmt.Print("error in adding year")
+		fmt.Print(count)
 		return api.Year{}, err
+	}
+	// add all 12 months for the year!
+	months := [12]string{
+		"JAN-",
+		"FEB-",
+		"MAR-",
+		"APRIL-",
+		"MAY-",
+		"JUNE-",
+		"JULY-",
+		"AUG-",
+		"SEPT-",
+		"OCT-",
+		"NOV-",
+		"DEC-",
+	}
+	for _, v := range months {
+		// fmt.Printf("2**%d = %d\n", i, v)
+		q2 := `INSERT INTO yearmonths(id, description, year_id, status)
+    VALUES($1, $2, $3, $4)`
+		_, err = db.conn.Exec(
+			ctx,
+			q2,
+			formattedID,
+			v+Year.Description,
+			formattedID,
+			1,
+		)
+		if err != nil {
+			return api.Year{}, err
+		}
 	}
 	return Year, nil
 }
 
 func (db *Db) AddPeriods(ctx context.Context, Period api.Period) (api.Period, error) {
-	query := `SELECT COUNT(*) FROM Year`
+	query := `SELECT COUNT(*) FROM Periods`
 	var count int
 	rows, err := db.conn.Query(ctx, query)
 	rows.Scan(&count)
 	if err != nil {
-		return api.Period{}, fmt.Errorf("unable to query users: %w", err)
+		return api.Period{}, fmt.Errorf("unable to query periods: %w", err)
 	}
 	// pgx.CollectOneRow(rows, pgx.RowToStructByName(count))
 	defer rows.Close()
 	// rows, err := db.conn.Query(ctx, "SELECT COUNT(*) FROM class").
 	// 	Scan(&count)
-	if err != nil {
-		log.Fatal(err)
-	}
 	nextId := count + 1
 	formattedID := fmt.Sprintf("%04d", nextId)
-	q := `INSERT INTO Year(id, description, status)
-    VALUES($1, $2, $3)`
+	q := `INSERT INTO periods(id, period_description, status, year_id)
+    VALUES($1, $2, $3, $4)`
 	_, err = db.conn.Exec(
 		ctx,
 		q,
 		formattedID,
-		// Period.Description,
+		Period.PeriodDescription,
 		Period.Status,
+		Period.YearId,
 	)
 	if err != nil {
 		return api.Period{}, err
+	}
+	months := [12]string{
+		"JAN-",
+		"FEB-",
+		"MAR-",
+		"APRIL-",
+		"MAY-",
+		"JUNE-",
+		"JULY-",
+		"AUG-",
+		"SEPT-",
+		"OCT-",
+		"NOV-",
+		"DEC-",
+	}
+	for _, v := range months {
+		// fmt.Printf("2**%d = %d\n", i, v)
+		q2 := `INSERT INTO periodmonths(id, description, status)
+    VALUES($1, $2, $3)`
+		_, err = db.conn.Exec(
+			ctx,
+			q2,
+			formattedID,
+			v+Period.PeriodDescription,
+			1,
+		)
+		if err != nil {
+			return api.Period{}, err
+		}
 	}
 	return Period, nil
 }
@@ -313,6 +381,37 @@ func (db *Db) GetBatches(ctx context.Context) ([]api.Batch, error) {
 	defer rows.Close()
 	// var data []api.Student
 	products, err := pgx.CollectRows(rows, pgx.RowToStructByName[api.Batch])
+	if err != nil {
+		return nil, fmt.Errorf("unable to collect rows: %w", err)
+	}
+	return products, nil
+}
+
+func (db *Db) GetYearWithMonths(ctx context.Context) ([]api.YearMonthJoin, error) {
+	q := `SELECT year.id, 
+               year.description, 
+               year.status, 
+               yearmonths.id AS yearmonthid, 
+               yearmonths.description AS yearmonthdescription,  
+               yearmonths.status AS yearmonthstatus,
+               (
+                 SELECT json_agg(
+                   jsonb_build_object(
+                     'yearmonthdescription', yearmonth.description
+                   )
+                 )
+                 FROM yearmonths AS yearmonth
+                 WHERE yearmonth.year_id = year.id
+               ) AS months
+        FROM year 
+        LEFT JOIN yearmonths ON year.id = yearmonths.year_id`
+	rows, err := db.conn.Query(ctx, q)
+	if err != nil {
+		return nil, fmt.Errorf("unable to query users: %w", err)
+	}
+	defer rows.Close()
+	// var data []api.Student
+	products, err := pgx.CollectRows(rows, pgx.RowToStructByName[api.YearMonthJoin])
 	if err != nil {
 		return nil, fmt.Errorf("unable to collect rows: %w", err)
 	}
