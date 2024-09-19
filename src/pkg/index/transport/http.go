@@ -190,7 +190,9 @@ func (h *handler) GetBatches(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) GetYearWithMonths(w http.ResponseWriter, r *http.Request) {
-	results, err := h.indexService.GetYearWithMonths(r.Context())
+	queryparams := r.URL.Query()
+	yearId := queryparams.Get("yearId")
+	results, err := h.indexService.GetYearWithMonths(r.Context(), yearId)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})

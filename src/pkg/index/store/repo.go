@@ -387,7 +387,7 @@ func (db *Db) GetBatches(ctx context.Context) ([]api.Batch, error) {
 	return products, nil
 }
 
-func (db *Db) GetYearWithMonths(ctx context.Context) ([]api.YearMonthJoin, error) {
+func (db *Db) GetYearWithMonths(ctx context.Context, yearId string) ([]api.YearMonthJoin, error) {
 	q := `SELECT year.id, 
                year.description, 
                year.status, 
@@ -404,9 +404,9 @@ func (db *Db) GetYearWithMonths(ctx context.Context) ([]api.YearMonthJoin, error
                  WHERE yearmonth.year_id = year.id
                ) AS months
         FROM year 
-        WHERE year.id = '0001'
+        WHERE year.id = $1
         `
-	rows, err := db.conn.Query(ctx, q)
+	rows, err := db.conn.Query(ctx, q, yearId)
 	if err != nil {
 		return nil, fmt.Errorf("unable to query users: %w", err)
 	}
