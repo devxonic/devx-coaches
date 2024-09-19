@@ -20,7 +20,7 @@ type Repo interface {
 	AddYear(ctx context.Context, year api.Year) (api.Year, error)
 	AddBatch(ctx context.Context, Batch api.Batch) (api.Batch, error)
 	GetYearWithMonths(ctx context.Context) ([]api.YearMonthJoin, error)
-	// GetYears(ctx context.Context) (api.Year, error)
+	GetYears(ctx context.Context) ([]api.Year, error)
 }
 
 type Service interface {
@@ -37,7 +37,7 @@ type Service interface {
 	GetStudents(ctx context.Context) ([]api.Student, error)
 	AddBatch(ctx context.Context, Batch api.Batch) (api.Batch, error)
 	GetYearWithMonths(ctx context.Context) ([]api.YearMonthJoin, error)
-	// GetYears(ctx context.Context) (api.Year, error)
+	GetYears(ctx context.Context) ([]api.Year, error)
 }
 
 type repoService struct {
@@ -90,4 +90,8 @@ func (r *repoService) GetSubjects(ctx context.Context) ([]api.Subject, error) {
 
 func (r *repoService) GetYearWithMonths(ctx context.Context) ([]api.YearMonthJoin, error) {
 	return r.repo.GetYearWithMonths(ctx)
+}
+
+func (r *repoService) GetYears(ctx context.Context) ([]api.Year, error) {
+	return r.repo.GetYears(ctx)
 }

@@ -37,7 +37,7 @@ func NewHandler(s index.Service, ro chi.Router) {
 		r.Post("/addPeriod", h.AddPeriods)
 		// r.Get("/getPeriods", h.GetPeriods)
 		r.Get("/getYearWithMonths", h.GetYearWithMonths)
-		// r.Get("/getYears", h.GetYear)
+		r.Get("/getYears", h.GetYears)
 	})
 }
 
@@ -191,6 +191,16 @@ func (h *handler) GetBatches(w http.ResponseWriter, r *http.Request) {
 
 func (h *handler) GetYearWithMonths(w http.ResponseWriter, r *http.Request) {
 	results, err := h.indexService.GetYearWithMonths(r.Context())
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(results)
+}
+
+func (h *handler) GetYears(w http.ResponseWriter, r *http.Request) {
+	results, err := h.indexService.GetYears(r.Context())
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})

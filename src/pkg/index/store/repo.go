@@ -391,20 +391,21 @@ func (db *Db) GetYearWithMonths(ctx context.Context) ([]api.YearMonthJoin, error
 	q := `SELECT year.id, 
                year.description, 
                year.status, 
-               yearmonths.id AS yearmonthid, 
-               yearmonths.description AS yearmonthdescription,  
-               yearmonths.status AS yearmonthstatus,
                (
                  SELECT json_agg(
                    jsonb_build_object(
-                     'yearmonthdescription', yearmonth.description
+                     'description', yearmonth.description,
+                     'id', yearmonth.id,
+                     'status', yearmonth.status,
+                     'yearId', yearmonth.year_id
                    )
                  )
                  FROM yearmonths AS yearmonth
                  WHERE yearmonth.year_id = year.id
                ) AS months
         FROM year 
-        LEFT JOIN yearmonths ON year.id = yearmonths.year_id`
+        WHERE year.id = '0001'
+        `
 	rows, err := db.conn.Query(ctx, q)
 	if err != nil {
 		return nil, fmt.Errorf("unable to query users: %w", err)
@@ -412,6 +413,23 @@ func (db *Db) GetYearWithMonths(ctx context.Context) ([]api.YearMonthJoin, error
 	defer rows.Close()
 	// var data []api.Student
 	products, err := pgx.CollectRows(rows, pgx.RowToStructByName[api.YearMonthJoin])
+	if err != nil {
+		return nil, fmt.Errorf("unable to collect rows: %w", err)
+	}
+	return products, nil
+}
+
+func (db *Db) GetYears(ctx context.Context) ([]api.Year, error) {
+	q := `SELECT *
+        FROM year 
+        `
+	rows, err := db.conn.Query(ctx, q)
+	if err != nil {
+		return nil, fmt.Errorf("unable to query users: %w", err)
+	}
+	defer rows.Close()
+	// var data []api.Student
+	products, err := pgx.CollectRows(rows, pgx.RowToStructByName[api.Year])
 	if err != nil {
 		return nil, fmt.Errorf("unable to collect rows: %w", err)
 	}

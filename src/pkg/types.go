@@ -81,11 +81,11 @@ type Batch struct {
 }
 
 type YearMonthJoin struct {
-	Id                   string `json:"id"`
-	Description          string `json:"description"`
-	Status               string `json:"status"`
-	Yearmonthstatus      string `json:"yearmonthstatus"`
-	Yearmonthid          string `json:"yearmonthid"`
-	Yearmonthdescription string `json:"yearmonthdescription"`
-	Months               string `json:"months"`
+	Id          string `json:"id"`
+	Description string `json:"description"`
+	Status      string `json:"status"`
+	// Yearmonthstatus      string `json:"yearmonthstatus"`
+	// Yearmonthid          string `json:"yearmonthid"`
+	// Yearmonthdescription string `json:"yearmonthdescription"`
+	Months []YearMonth `json:"months"`
 }
