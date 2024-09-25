@@ -10,6 +10,7 @@ type Repo interface {
 	AddStudent(ctx context.Context, student api.Student) (api.Student, error)
 	// GetStudent(ctx context.Context) (api.Student, error)
 	GetClass(ctx context.Context) ([]api.Class, error)
+	GetStudentReceipts(ctx context.Context) ([]api.Student_receipt_body, error)
 	GetStudents(ctx context.Context) ([]api.Student, error)
 	AddClass(ctx context.Context, class api.Class) (api.Class, error)
 	AddSubject(ctx context.Context, subject api.Subject) (api.Subject, error)
@@ -21,6 +22,10 @@ type Repo interface {
 	AddBatch(ctx context.Context, Batch api.Batch) (api.Batch, error)
 	GetYearWithMonths(ctx context.Context, yearId string) ([]api.YearMonthJoin, error)
 	GetYears(ctx context.Context) ([]api.Year, error)
+	AddStudentReceipt(
+		ctx context.Context,
+		receipt api.Student_receipt_body,
+	) (api.Student_receipt_body, error)
 }
 
 type Service interface {
@@ -38,6 +43,11 @@ type Service interface {
 	AddBatch(ctx context.Context, Batch api.Batch) (api.Batch, error)
 	GetYearWithMonths(ctx context.Context, yearId string) ([]api.YearMonthJoin, error)
 	GetYears(ctx context.Context) ([]api.Year, error)
+	AddStudentReceipt(
+		ctx context.Context,
+		receipt api.Student_receipt_body,
+	) (api.Student_receipt_body, error)
+	GetStudentReceipts(ctx context.Context) ([]api.Student_receipt_body, error)
 }
 
 type repoService struct {
@@ -97,4 +107,15 @@ func (r *repoService) GetYearWithMonths(
 
 func (r *repoService) GetYears(ctx context.Context) ([]api.Year, error) {
 	return r.repo.GetYears(ctx)
+}
+
+func (r *repoService) AddStudentReceipt(
+	ctx context.Context,
+	receipt api.Student_receipt_body,
+) (api.Student_receipt_body, error) {
+	return r.repo.AddStudentReceipt(ctx, receipt)
+}
+
+func (r *repoService) GetStudentReceipts(ctx context.Context) ([]api.Student_receipt_body, error) {
+	return r.repo.GetStudentReceipts(ctx)
 }

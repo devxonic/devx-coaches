@@ -38,6 +38,8 @@ func NewHandler(s index.Service, ro chi.Router) {
 		// r.Get("/getPeriods", h.GetPeriods)
 		r.Get("/getYearWithMonths", h.GetYearWithMonths)
 		r.Get("/getYears", h.GetYears)
+		r.Post("/addStudentReceipt", h.AddStudentReceipt)
+		r.Get("/getStudentReceipts", h.GetStudentReceipts)
 	})
 }
 
@@ -206,6 +208,37 @@ func (h *handler) GetYears(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(results)
+}
+
+func (h *handler) AddStudentReceipt(w http.ResponseWriter, r *http.Request) {
+	var s api.Student_receipt_body
+	err := json.NewDecoder(r.Body).Decode(&s)
+	w.Header().Set("Content-Type", "application/json")
+	if err != nil {
+		fmt.Print("error in body decoding")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+		return
+	}
+	results, err := h.indexService.AddStudentReceipt(r.Context(), s)
+	if err != nil {
+		fmt.Print("error in add student receipt")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+		return
+	}
+	json.NewEncoder(w).Encode(results)
+}
+
+func (h *handler) GetStudentReceipts(w http.ResponseWriter, r *http.Request) {
+	results, err := h.indexService.GetStudentReceipts(r.Context())
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(results)

@@ -295,35 +295,6 @@ func (db *Db) AddPeriods(ctx context.Context, Period api.Period) (api.Period, er
 	if err != nil {
 		return api.Period{}, err
 	}
-	months := [12]string{
-		"JAN-",
-		"FEB-",
-		"MAR-",
-		"APRIL-",
-		"MAY-",
-		"JUNE-",
-		"JULY-",
-		"AUG-",
-		"SEPT-",
-		"OCT-",
-		"NOV-",
-		"DEC-",
-	}
-	for _, v := range months {
-		// fmt.Printf("2**%d = %d\n", i, v)
-		q2 := `INSERT INTO periodmonths(id, description, status)
-    VALUES($1, $2, $3)`
-		_, err = db.conn.Exec(
-			ctx,
-			q2,
-			formattedID,
-			v+Period.PeriodDescription,
-			1,
-		)
-		if err != nil {
-			return api.Period{}, err
-		}
-	}
 	return Period, nil
 }
 
@@ -434,4 +405,104 @@ func (db *Db) GetYears(ctx context.Context) ([]api.Year, error) {
 		return nil, fmt.Errorf("unable to collect rows: %w", err)
 	}
 	return products, nil
+}
+
+func (db *Db) GetStudentReceipts(ctx context.Context) ([]api.Student_receipt_body, error) {
+	q := `SELECT receipt.id, 
+               receipt.description, 
+               receipt.amount, 
+               receipt.student_id,
+               receipt.incadmissionfee,
+               receipt.discount,
+               receipt.discountinpercent,
+               receipt.subtotal,
+               (
+                 SELECT json_agg(
+                   jsonb_build_object(
+                     'month', receipt_month.description,
+                     'description', receipt_month.id,
+                     'amount', receipt_month.amount
+                   )
+                 )
+                 FROM student_receipt_months AS receipt_month
+                 WHERE receipt_month.receipt_id = receipt.id
+               ) AS months
+        FROM student_receipts AS receipt 
+        `
+	rows, err := db.conn.Query(ctx, q)
+	if err != nil {
+		return nil, fmt.Errorf("unable to query users: %w", err)
+	}
+	defer rows.Close()
+	// var data []api.Student
+	products, err := pgx.CollectRows(rows, pgx.RowToStructByName[api.Student_receipt_body])
+	if err != nil {
+		return nil, fmt.Errorf("unable to collect rows: %w", err)
+	}
+	return products, nil
+}
+
+func (db *Db) AddStudentReceipt(
+	ctx context.Context,
+	receipt api.Student_receipt_body,
+) (api.Student_receipt_body, error) {
+	query := `SELECT COUNT(*) FROM student_receipts`
+	var count int
+	rows, err := db.conn.Query(ctx, query)
+	if err != nil {
+		return api.Student_receipt_body{}, fmt.Errorf("unable to execute query: %w", err)
+	}
+	defer rows.Close()
+
+	if rows.Next() {
+		err := rows.Scan(&count)
+		if err != nil {
+			return api.Student_receipt_body{}, fmt.Errorf("unable to scan row: %w", err)
+		}
+	} else {
+		return api.Student_receipt_body{}, fmt.Errorf("no rows returned")
+	}
+
+	if err := rows.Err(); err != nil {
+		return api.Student_receipt_body{}, fmt.Errorf("error iterating over rows: %w", err)
+	}
+
+	nextId := count + 1
+	formattedID := fmt.Sprintf("%04d", nextId)
+	q := `INSERT INTO student_receipts(id, description, student_id, subtotal, discount, incadmissionfee, 
+    amount, discountinpercent)
+    VALUES($1, $2, $3, $4, $5, $6, $7, $8)`
+	_, err = db.conn.Exec(
+		ctx,
+		q,
+		formattedID,
+		receipt.Description,
+		receipt.Student_Id,
+		receipt.SubTotal,
+		receipt.Discount,
+		receipt.IncAdmissionFee,
+		receipt.Amount,
+		receipt.DiscountInPercent,
+	)
+	if err != nil {
+		fmt.Println("student receipt adding issue?")
+		return api.Student_receipt_body{}, err
+	}
+	for _, v := range receipt.Months {
+		q2 := `INSERT INTO student_receipt_months(month, amount, description, receipt_id)
+    VALUES($1, $2, $3, $4)`
+		_, err = db.conn.Exec(
+			ctx,
+			q2,
+			v.Month,
+			v.Amount,
+			v.Description,
+			formattedID,
+		)
+		if err != nil {
+			fmt.Println("student month receipt adding issue?")
+			return api.Student_receipt_body{}, err
+		}
+	}
+	return receipt, nil
 }

@@ -89,3 +89,37 @@ type YearMonthJoin struct {
 	// Yearmonthdescription string `json:"yearmonthdescription"`
 	Months []YearMonth `json:"months"`
 }
+
+type Student_receipt struct {
+	Id                string `json:"id"`
+	Description       string `json:"description"`
+	Student_Id        string `json:"student_id"`
+	Date              string `json:"date"`
+	SubTotal          string `json:"sub_total"`
+	Discount          string `json:"discount"`
+	IncAdmissionFee   string `json:"inc_admission_fee"`
+	Amount            string `json:"amount"`
+	DiscountInPercent string `json:"discount_in_percent"`
+	// Months            []student_receipt_month `json:"months"`
+	// Class_Id string
+}
+
+type Student_receipt_body struct {
+	Id          string `json:"id"`
+	Description string `json:"description"`
+	Student_Id  string `json:"student_id"`
+	// Date              string                  `json:"date"`
+	SubTotal          string                  `json:"sub_total"`
+	Discount          string                  `json:"discount"`
+	IncAdmissionFee   string                  `json:"inc_admission_fee"`
+	Amount            string                  `json:"amount"`
+	DiscountInPercent string                  `json:"discount_in_percent"`
+	Months            []Student_receipt_month `json:"months"`
+	// Class_Id string
+}
+
+type Student_receipt_month struct {
+	Month       string `json:"month"`
+	Description string `json:"description"`
+	Amount      string `json:"amount"`
+}
